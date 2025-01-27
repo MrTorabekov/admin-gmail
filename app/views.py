@@ -1,7 +1,10 @@
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from app.models import Doctor,News
+from django_filters.rest_framework import DjangoFilterBackend
 from app.serializers import DoctorSerializer,NewsSerializer
 
 class DoctorAPIView(APIView):
@@ -32,3 +35,11 @@ class NewsAPIView(APIView):
             news = News.objects.all()
             serializer = NewsSerializer(news, many=True)
             return Response(serializer.data)
+
+
+class DoctorFilterView(ListAPIView):
+    serializer_class = DoctorSerializer
+    queryset = Doctor.objects.all()
+    filter_backends = [DjangoFilterBackend,SearchFilter]
+    search_fields = ['location', 'clinic_name']
+    filterset_fields = ['experience', 'rating_percentage', 'consultation_fee', 'location']

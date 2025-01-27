@@ -1,5 +1,7 @@
+
 from rest_framework import serializers
 from app.models import Doctor,User,News
+from roots import settings
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,8 +19,13 @@ class DoctorSerializer(serializers.ModelSerializer):
 
 class NewsSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+    img = serializers.SerializerMethodField()
     class Meta:
 
         model = News
         fields = ['user','title','img','created_at']
 
+    def get_img(self,obj):
+        if obj.img:
+            return settings.BASE_URL + obj.img.url
+        return None
