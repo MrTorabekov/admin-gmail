@@ -29,3 +29,9 @@ class NewsSerializer(serializers.ModelSerializer):
         if obj.img:
             return settings.BASE_URL + obj.img.url
         return None
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','username','email','password','role')

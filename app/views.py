@@ -1,13 +1,18 @@
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from rest_framework.response import Response
+from django.contrib.auth.hashers import check_password,make_password
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 from app.models import Doctor,News
 from django_filters.rest_framework import DjangoFilterBackend
-from app.serializers import DoctorSerializer,NewsSerializer
+from app.serializers import DoctorSerializer,NewsSerializer,RegisterSerializer
 
 class DoctorAPIView(APIView):
+
+    throttle_classes = [UserRateThrottle]
     def get(self, request, pk=None):
         if pk:
             try:
@@ -43,3 +48,24 @@ class DoctorFilterView(ListAPIView):
     filter_backends = [DjangoFilterBackend,SearchFilter]
     search_fields = ['location', 'clinic_name']
     filterset_fields = ['experience', 'rating_percentage', 'consultation_fee', 'location']
+
+
+class RegisterAPIView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save(password=make_password(serializer.validated_data['password']))
+            # Generate jwt
+
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            return Response({
+                    'refresh': str(refresh),
+                    'access': access_token,
+                    'username': serializer.data
+                }, status=status.HTTP_201_CREATED
+            )
+
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
