@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password,make_password
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from app.models import Doctor,News
+from app.models import Doctor,News,User
 from django_filters.rest_framework import DjangoFilterBackend
-from app.serializers import DoctorSerializer,NewsSerializer,RegisterSerializer
+from app.serializers import DoctorSerializer,NewsSerializer,RegisterSerializer,LoginSerializer
 
 class DoctorAPIView(APIView):
 
@@ -69,3 +69,25 @@ class RegisterAPIView(APIView):
 
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginApiView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data.get("email")
+            password = serializer.validated_data.get("password")
+
+            user = User.objects.get(email=email)
+            if user.check_password(password):
+                if not user.is_active:
+                    return Response({"detail": "User accaunt is inactive."}, status=status.HTTP_400_BAD_REQUEST)
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+
+                return Response({
+                    "refresh": str(refresh),
+                    "access": access_token,
+                }, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
