@@ -9,10 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        if instance.img:
-            representation['img'] = settings.BASE_URL + instance.img.url
+        if instance.avatar:
+            representation['avatar'] = settings.BASE_URL + instance.avatar.url
         else:
-            representation['img'] = None
+            representation['avatar'] = None
         return representation
 
 
