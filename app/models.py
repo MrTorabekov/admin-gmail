@@ -45,23 +45,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        '''
-        Sends an email to this User.
-        '''
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
 class Doctor(models.Model):
-    user=models.OneToOneField(User,on_delete=models.CASCADE)
-    specialization=models.CharField(_('specialization'), max_length=150)
-    experience=models.PositiveIntegerField(_('experience'), default=0)
-    location=models.CharField(_('location'), max_length=150)
-    clinic_name=models.CharField(_('clinic name'), max_length=150)
-    consultation_fee=models.DecimalField(_('consultation fee'), max_digits=50, decimal_places=2)
-    is_consultation_fee=models.BooleanField(_('consultation fee'), default=False)
-    available_today=models.BooleanField(_('available today'), default=False)
-    rating_percentage=models.PositiveIntegerField(_('rating percentage'), default=0)
-    patient_stories=models.PositiveIntegerField(_('patient stories'), default=0)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    specialization = models.CharField(_("specialization"), max_length=100)
+    experience = models.PositiveIntegerField(_("experience"), default=0)
+    location = models.CharField(_("location"), max_length=150)
+    clinic_name = models.CharField(_("clinic name"), max_length=150)
+    consultation_fee = models.DecimalField(_("consultation fee"), decimal_places=2, max_digits=10, default=0)
+    is_consultation_fee = models.BooleanField(_("is consultation free"), default=False)
+    availability_today = models.BooleanField(_("availability today"), default=False)
+    rating_percentage = models.PositiveIntegerField(_("rating percentage"), default=0)
+    patient_stories = models.PositiveIntegerField(_('patient stories'), default=0)
 
     def __str__(self):
         return self.specialization
@@ -83,4 +80,23 @@ class News(models.Model):
 
     class Meta:
         verbose_name = _('news')
+        verbose_name_plural = _('news')
 
+
+class Booking(models.Model):
+    STATUS = [
+        ('available', 'Available'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    date_time = models.DateTimeField(_('date time'), auto_now_add=True)
+    status = models.CharField(max_length=15, choices=STATUS, default='active')
+    created_at = models.DateField(_('created at'), auto_now_add=True)
+    updated_at = models.DateField(_('updated at'), auto_now=True)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return f'{self.doctor} - {self.date_time}'

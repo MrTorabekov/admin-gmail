@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from app.models import Doctor,User,News
+from app.models import Doctor,User,News,Booking
 from roots import settings
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,13 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
             representation['avatar'] = None
         return representation
 
-
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
         model = Doctor
-        fields = ['user','specialization','experience','location','clinic_name','consultation_fee','is_consultation_fee','available_today','rating_percentage','patient_stories']
-
+        fields = ['user','specialization','experience','location','clinic_name','consultation_fee','is_consultation_fee','availability_today','rating_percentage','patient_stories']
 
 class NewsSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -36,7 +34,6 @@ class NewsSerializer(serializers.ModelSerializer):
             return settings.BASE_URL + obj.img.url
         return None
 
-
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -45,3 +42,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField()
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "avatar"]
+
+class DoctorUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctor
+        fields = ['specialization', 'experience', 'location', 'clinic_name', 'consultation_fee',
+                  'is_consultation_fee', 'availability_today']
+
+class BookingSerializer(serializers.ModelSerializer):
+    doctor = DoctorSerializer()
+    class Meta:
+        model = Booking
+        fields = ['id', 'doctor', 'date_time', 'status']

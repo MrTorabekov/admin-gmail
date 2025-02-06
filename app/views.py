@@ -1,16 +1,26 @@
+from drf_spectacular.utils import extend_schema,OpenApiParameter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from app.models import Doctor,News,User
+from app.models import Doctor,News,User,Booking
 from django_filters.rest_framework import DjangoFilterBackend
-from app.serializers import DoctorSerializer,NewsSerializer,RegisterSerializer,LoginSerializer
-from drf_spectacular.utils import extend_schema,OpenApiParameter
-from rest_framework.permissions import IsAuthenticated
+from app.serializers import (
+    DoctorSerializer,
+    NewsSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    UserUpdateSerializer,
+    DoctorUpdateSerializer,
+    BookingSerializer
+)
+
 
 class DoctorAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -108,3 +118,55 @@ class LoginApiView(APIView):
         else:
             return Response({"detail": "invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserUpdateAPIView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    @extend_schema(
+        summary="User Registration",
+        description="Register user",
+        request=UserUpdateSerializer,
+        responses={
+            200: OpenApiParameter(name="User Updated", description="User data updated"),
+            400: OpenApiParameter(name="Errors", description="Invalid credentials")
+        },
+        tags=["User Update"]
+    )
+    def put(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserUpdateSerializer(instance=user, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DoctorUpdateAPIView(APIView):
+    @extend_schema(
+        summary="Doctor Update API View",
+        description="Doctor Update Data",
+        request=DoctorUpdateSerializer,
+        responses={
+            200: OpenApiParameter(name="Doctor Update", description="Doctor Update APi View data"),
+            400: OpenApiParameter(name="Errors", description="Invalid credentials")
+        },
+        tags=["Doctor"]
+    )
+    def put(self, request, pk):
+        doctor = get_object_or_404(Doctor, pk=pk)
+        serializer = DoctorUpdateSerializer(doctor, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DoctorDeleteAPIView(APIView):
+    def delete(self, request, pk):
+        doctor = get_object_or_404(Doctor, pk=pk)
+        doctor.delete()
+        return Response({'message': 'Doctor has been deleted successfully'}, status=status.HTTP_200_OK)
+
+class BookingAPIView(APIView):
+    def get(self, request):
+        booking = Booking.objects.all()
+        serializer = BookingSerializer(booking, many=True)
+        return Response(serializer.data)

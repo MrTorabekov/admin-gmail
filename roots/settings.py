@@ -145,11 +145,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Medical Api',
-    'DESCRIPTION': 'Medical project',
+    'TITLE': 'Doctor Booking API',
+    'DESCRIPTION': 'Medical Booking API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
+    'SCHEMA_PATH_PREFIX': r'/api',
+    'COMPONENT_SPLIT_REQUEST': True
 }
 
 SIMPLE_JWT = {
