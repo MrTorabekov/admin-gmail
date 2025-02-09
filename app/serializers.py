@@ -1,6 +1,11 @@
+from datetime import timedelta
+
+from django.utils.timezone import now
 from rest_framework import serializers
-from app.models import Doctor,User,News,Booking
+
+from app.models import Doctor, User, News,Date
 from roots import settings
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,7 +62,16 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
                   'is_consultation_fee', 'availability_today']
 
 class BookingSerializer(serializers.ModelSerializer):
-    doctor = DoctorSerializer()
+    user = UserSerializer()
     class Meta:
-        model = Booking
-        fields = ['id', 'doctor', 'date_time', 'status']
+        model = Date
+        fields = ['id','user', 'doctor', 'date','time', 'status']
+
+
+class DateSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = Date
+        fields = ['id','user', 'doctor', 'date','time', 'status','created_at']
+
+

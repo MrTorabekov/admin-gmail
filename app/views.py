@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema,OpenApiParameter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from app.models import Doctor,News,User,Booking
+from app.models import Doctor,News,User,Date
 from django_filters.rest_framework import DjangoFilterBackend
 from app.serializers import (
     DoctorSerializer,
@@ -18,7 +18,7 @@ from app.serializers import (
     LoginSerializer,
     UserUpdateSerializer,
     DoctorUpdateSerializer,
-    BookingSerializer
+    DateSerializer
 )
 
 
@@ -165,8 +165,31 @@ class DoctorDeleteAPIView(APIView):
         doctor.delete()
         return Response({'message': 'Doctor has been deleted successfully'}, status=status.HTTP_200_OK)
 
-class BookingAPIView(APIView):
+
+class DoctorDateAPIView(APIView):
     def get(self, request):
-        booking = Booking.objects.all()
-        serializer = BookingSerializer(booking, many=True)
-        return Response(serializer.data)
+        try:
+            dates = Date.objects.filter(status='pending')
+            serializer = DateSerializer(dates, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Date does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BookingAPIView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
+    def get(self, request, pk):
+        user = request.user
+        try:
+            available_date = Date.objects.get(pk=pk, status='pending')
+            available_date.status = 'confirmed'
+            available_date.user = user
+            available_date.save()
+
+        except Date.DoesNotExist:
+            return Response({'detail': 'The selected date and time are not available.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = DateSerializer(available_date)
+        return Response(serializer.data, status=status.HTTP_200_OK)

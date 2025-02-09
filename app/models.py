@@ -47,7 +47,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-
 class Doctor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     specialization = models.CharField(_("specialization"), max_length=100)
@@ -82,21 +81,21 @@ class News(models.Model):
         verbose_name = _('news')
         verbose_name_plural = _('news')
 
-
-class Booking(models.Model):
+class Date(models.Model):
     STATUS = [
-        ('available', 'Available'),
-        ('rejected', 'Rejected'),
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
+        ('rejected', 'Rejected')
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    date_time = models.DateTimeField(_('date time'), auto_now_add=True)
-    status = models.CharField(max_length=15, choices=STATUS, default='active')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='doctor')
+    date = models.DateField(_('date'))
+    time = models.TimeField(_('time'))
+    status = models.CharField(max_length=15, choices=STATUS, default='pending')
     created_at = models.DateField(_('created at'), auto_now_add=True)
-    updated_at = models.DateField(_('updated at'), auto_now=True)
 
     objects = models.Manager()
 
     def __str__(self):
-        return f'{self.doctor} - {self.date_time}'
+        return f'{self.doctor} - {self.time}'

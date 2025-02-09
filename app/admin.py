@@ -1,6 +1,13 @@
 from django.contrib import admin
-from app.models import User,Doctor,News,Booking
-admin.site.register(User)
+from app.models import User,Doctor,News,Date
 admin.site.register(Doctor)
 admin.site.register(News)
-admin.site.register(Booking)
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id','username','email','is_staff')
+
+@admin.register(Date)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('status','doctor','date','time')
