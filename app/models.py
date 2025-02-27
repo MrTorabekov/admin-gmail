@@ -88,6 +88,7 @@ class Date(models.Model):
         ('completed', 'Completed'),
         ('rejected', 'Rejected')
     ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='doctor')
     date = models.DateField(_('date'))

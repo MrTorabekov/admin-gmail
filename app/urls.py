@@ -19,7 +19,7 @@ urlpatterns = [
     path('news/<int:pk>', NewsAPIView.as_view(), name='news-detail'),
     path('news/', NewsAPIView.as_view(), name='news-detail'),
     path("search/", DoctorFilterView.as_view(), name='search'),
-    path('date', DoctorDateAPIView.as_view(), name='doctor-date'),
+    path('date/', DoctorDateAPIView.as_view(), name='doctor-date'),
     path('booking/<int:pk>', BookingAPIView.as_view(), name='booking-list'),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
